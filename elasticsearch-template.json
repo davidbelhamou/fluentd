@@ -1,0 +1,29 @@
+{
+  "index_patterns": ["python-logs-*"],
+  "data_stream": {},
+  "template": {
+    "settings": {
+      "number_of_shards": 1,
+      "number_of_replicas": 1
+    },
+    "mappings": {
+      "properties": {
+        "@timestamp": {
+          "type": "date"
+        },
+        "user_id": {
+          "type": "long"
+        },
+        "action": {
+          "type": "keyword"
+        },
+        "status": {
+          "type": "keyword"
+        },
+        "response_time": {
+          "type": "float"
+        }
+      }
+    }
+  }
+} 
