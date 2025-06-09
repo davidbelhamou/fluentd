@@ -1,6 +1,8 @@
 {
   "index_patterns": ["python-logs-*"],
-  "data_stream": {},
+  "data_stream": {
+    "name": "python-logs"
+  },
   "template": {
     "settings": {
       "number_of_shards": 1,
@@ -9,7 +11,8 @@
     "mappings": {
       "properties": {
         "@timestamp": {
-          "type": "date"
+          "type": "date",
+          "format": "strict_date_time"
         },
         "user_id": {
           "type": "long"
