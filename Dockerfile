@@ -1,7 +1,24 @@
-FROM python:3.9-slim
+FROM fluent/fluentd:edge-debian
 
-WORKDIR /app
+USER root
 
-COPY app.py .
+# Create necessary directories with proper permissions
+RUN mkdir -p /var/log/fluentd/pos /var/log/fluentd/buffer && \
+    chown -R fluent:fluent /var/log/fluentd && \
+    chmod -R 777 /var/log/fluentd/buffer && \
+    chmod -R 777 /var/log/fluentd/pos
 
-CMD ["python", "app.py"] 
+# Install Elasticsearch plugin
+RUN gem install elasticsearch --no-document && \
+    gem install elastic-transport:8.4.0 --no-document && \
+    gem install fluent-plugin-elasticsearch --no-document && \
+    gem install faraday-excon --no-document
+
+# Install Prometheus plugin
+RUN gem install fluent-plugin-prometheus
+
+# Cleanup
+RUN gem sources --clear-all \
+ && rm -rf /tmp/* /var/tmp/* /usr/lib/ruby/gems/*/cache/*.gem
+
+USER fluent 
