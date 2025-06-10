@@ -90,6 +90,27 @@ services:
       setup-data-stream:
         condition: service_completed_successfully
 
+  log-cleanup:
+    build:
+      context: ./remove_logged_file
+      dockerfile: Dockerfile
+    container_name: log-cleanup
+    volumes:
+      - app-logs:/var/log/app
+      - fluentd-pos:/var/log/fluentd/pos
+    command: >
+      sh -c '
+        sleep 20
+        while true; do
+          python remove_logged_file.py
+          sleep 300
+        done
+      '
+    depends_on:
+      - fluentd
+    networks:
+      - logging-network
+
 networks:
   logging-network:
     driver: bridge
