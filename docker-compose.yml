@@ -103,11 +103,12 @@ services:
         sleep 20
         while true; do
           python remove_logged_file.py
-          sleep 300
+          sleep 60
         done
       '
     depends_on:
-      - fluentd
+      fluentd:
+        condition: service_started
     networks:
       - logging-network
 

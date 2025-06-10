@@ -11,6 +11,7 @@ logger = logging.getLogger(__name__)
 POS_FILE_PATH = '/var/log/fluentd/pos/python-logs.pos'
 OLD_BASE_PATH_NAME = '/var/log/app'
 NEW_BASE_PATH_NAME = './log'
+MINUTES_TO_WAIT_BEFORE_DELETE = 5
 
 
 class RemoveReadLogFiles:
@@ -64,7 +65,7 @@ class RemoveReadLogFiles:
         for log_file in files_list:
             creation_time = self.get_file_creation_datetime(log_file['path'])
 
-            if creation_time and (creation_time < datetime.now() - timedelta(minutes=5)):
+            if creation_time and (creation_time < datetime.now() - timedelta(minutes=MINUTES_TO_WAIT_BEFORE_DELETE)):
 
                 if log_file['size'] < self.get_size_of_file(log_file['path']):
 
@@ -74,7 +75,7 @@ class RemoveReadLogFiles:
                 else:
                     logger.info(f"File: {log_file['path']} has not been completely read")
             else:
-                logger.info(f"File: {log_file['path']}  is not old enough or have been deleted")
+                logger.info(f"File: {log_file['path']} is not old enough or have been deleted")
 
 def main():
     a = RemoveReadLogFiles(POS_FILE_PATH)
