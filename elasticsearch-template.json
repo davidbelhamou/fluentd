@@ -1,7 +1,6 @@
 {
-  "index_patterns": ["python-logs-*"],
+  "index_patterns": ["python-logs*"],
   "data_stream": {
-    "name": "python-logs"
   },
   "template": {
     "settings": {

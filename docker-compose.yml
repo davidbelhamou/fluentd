@@ -52,6 +52,8 @@ services:
     depends_on:
       elasticsearch:
         condition: service_healthy
+      setup-data-stream:
+        condition: service_completed_successfully
     networks:
       - logging-network
     healthcheck:
@@ -65,6 +67,7 @@ services:
     container_name: setup-data-stream
     volumes:
       - ./elasticsearch-template.json:/elasticsearch-template.json
+      - ./elasticsearch-fallback-template.json:/elasticsearch-fallback-template.json
       - ./setup-data-stream.sh:/setup-data-stream.sh
     command: ["sh", "/setup-data-stream.sh"]
     depends_on:
