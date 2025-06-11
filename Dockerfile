@@ -17,6 +17,8 @@ RUN gem install elasticsearch --no-document && \
 # Install Prometheus plugin
 RUN gem install fluent-plugin-prometheus
 
+# Install rewrite-tag-filter plugin with specific version
+RUN gem install fluent-plugin-rewrite-tag-filter:2.4.0
 
 # Cleanup
 RUN gem sources --clear-all \

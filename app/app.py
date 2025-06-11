@@ -10,16 +10,6 @@ import uuid
 # Create logs directory if it doesn't exist
 os.makedirs('/var/log/app', exist_ok=True)
 
-def get_next_file_number():
-    """Get the next file number for the current date"""
-    today = datetime.now().strftime("%Y-%m-%d")
-    pattern = f"/var/log/app/my-logs-{today}-*.log"
-    existing_files = glob.glob(pattern)
-    if not existing_files:
-        return 1
-    numbers = [int(f.split('-')[-1].split('.')[0]) for f in existing_files]
-    return max(numbers) + 1 if numbers else 1
-
 def generate_log():
     """Generate a single log entry in JSON format"""
     log_data = {
@@ -52,37 +42,56 @@ def generate_service1_log():
     }   
     return json.dumps(log_data)
 
+def generate_service2_log():
+    """Generate a service2 log with log_type field"""
+    log_type = random.choice([1, 2])
+    log_data = {
+        "@timestamp": datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "user_id": random.randint(1, 1000),
+        "action": random.choice(["process", "validate", "transform", "export"]),
+        "status": random.choice(["success", "error", "warning"]),
+        "response_time": round(random.uniform(0.1, 2.0), 3),
+        "log_type": log_type,
+        "service_name": "service2"
+    }
+    return json.dumps(log_data)
+
 def write_logs_bulk():
-    """Write logs in bulk to a new file"""
+    """Write logs in bulk to a new file for each log type, with a UUID in the filename."""
     today = datetime.now().strftime("%Y-%m-%d")
-    file_number = get_next_file_number()
-    filename = f"/var/log/app/my-logs-{today}-{file_number}.log"
-    filename_service1 = f"/var/log/app/service1-logs-{today}-{file_number}.log"
-    
+    file_uuid_mylogs = uuid.uuid4()
+    file_uuid_service1 = uuid.uuid4()
+    file_uuid_service2 = uuid.uuid4()
+
+    filename = f"/var/log/app/my-logs-{today}-{file_uuid_mylogs}.log"
+    filename_service1 = f"/var/log/app/service1-logs-{today}-{file_uuid_service1}.log"
+    filename_service2 = f"/var/log/app/service2-logs-{today}-{file_uuid_service2}.log"
+
     # Generate and write logs in bulk
     logs = []
     logs_service1 = []
+    logs_service2 = []
     for _ in range(100):  # Generate 100 logs at once
-        logs.append(generate_log() if random.random() < 1.0 else generate_bad_log())
+        logs.append(generate_log())
         logs_service1.append(generate_service1_log())
+        logs_service2.append(generate_service2_log())
 
-
-    print(f"logs: {logs}")
-    print(f"logs_service1: {logs_service1}")
-    
     with open(filename, 'w') as f:
-        f.write('\n'.join(logs))
+        f.write('\n'.join(logs) + '\n')
     with open(filename_service1, 'w') as f:
-        f.write('\n'.join(logs_service1))
+        f.write('\n'.join(logs_service1) + '\n')
+    with open(filename_service2, 'w') as f:
+        f.write('\n'.join(logs_service2) + '\n')
 
     print(f"Written {len(logs)} logs to {filename}")
     print(f"Written {len(logs_service1)} logs to {filename_service1}")
+    print(f"Written {len(logs_service2)} logs to {filename_service2}")
 
 def main():
     """Main function to generate logs every 5 seconds"""
     while True:
         write_logs_bulk()
-        time.sleep(15)  # Wait for 5 seconds
+        time.sleep(15)  # Wait for 15 seconds
 
 if __name__ == "__main__":
     main() 

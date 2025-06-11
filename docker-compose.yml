@@ -69,6 +69,8 @@ services:
       - ./elasticsearch-template.json:/elasticsearch-template.json
       - ./elasticsearch-fallback-template.json:/elasticsearch-fallback-template.json
       - ./service1-template.json:/service1-template.json
+      - ./service2-type1-template.json:/service2-type1-template.json
+      - ./service2-type2-template.json:/service2-type2-template.json
       - ./setup-data-stream.sh:/setup-data-stream.sh
     command: ["sh", "/setup-data-stream.sh"]
     depends_on:
@@ -89,10 +91,6 @@ services:
     depends_on:
       elasticsearch:
         condition: service_healthy
-      fluentd:
-        condition: service_started
-      setup-data-stream:
-        condition: service_completed_successfully
 
   log-cleanup:
     build:

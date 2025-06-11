@@ -1,0 +1,40 @@
+{
+  "index_patterns": ["service2-type2*"],
+  "data_stream": {
+  },
+  "template": {
+    "settings": {
+      "number_of_shards": 1,
+      "number_of_replicas": 1
+    },
+    "mappings": {
+      "properties": {
+        "@timestamp": {
+          "type": "date",
+          "format": "strict_date_time"
+        },
+        "user_id": {
+          "type": "long"
+        },
+        "action": {
+          "type": "keyword"
+        },
+        "status": {
+          "type": "keyword"
+        },
+        "response_time": {
+          "type": "float"
+        },
+        "log_type": {
+          "type": "integer"
+        },
+        "service_name": {
+          "type": "keyword"
+        },
+        "source_file": {
+          "type": "keyword"
+        }
+      }
+    }
+  }
+} 
