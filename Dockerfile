@@ -17,6 +17,7 @@ RUN gem install elasticsearch --no-document && \
 # Install Prometheus plugin
 RUN gem install fluent-plugin-prometheus
 
+
 # Cleanup
 RUN gem sources --clear-all \
  && rm -rf /tmp/* /var/tmp/* /usr/lib/ruby/gems/*/cache/*.gem

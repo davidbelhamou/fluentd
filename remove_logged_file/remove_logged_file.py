@@ -8,7 +8,10 @@ from pathlib import Path
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
-POS_FILE_PATH = '/var/log/fluentd/pos/python-logs.pos'
+POS_FILES = [
+    '/var/log/fluentd/pos/python-logs.pos',
+    '/var/log/fluentd/pos/service1-logs.pos'
+]
 OLD_BASE_PATH_NAME = '/var/log/app'
 NEW_BASE_PATH_NAME = './log'
 MINUTES_TO_WAIT_BEFORE_DELETE = 5
@@ -21,8 +24,12 @@ class RemoveReadLogFiles:
         self.log_files_in_pos = []
 
     def _read_pos_file(self):
-        with open(self.pos_file_path, 'r') as r:
-            self.log_files_in_pos = r.readlines()
+        try:
+            with open(self.pos_file_path, 'r') as r:
+                self.log_files_in_pos = r.readlines()
+        except FileNotFoundError:
+            logger.warning(f"Pos file not found: {self.pos_file_path}")
+            self.log_files_in_pos = []
 
     @staticmethod
     def _parse_pos_file_lines(list_of_files: list[str]):
@@ -47,8 +54,12 @@ class RemoveReadLogFiles:
         return self.log_files_in_pos
 
     def get_size_of_file(self, file_path: str | Path) -> int:
-        stats = os.stat(self._format_path_for_local_dev(file_path))  # remove this in prod
-        return stats.st_size
+        try:
+            stats = os.stat(self._format_path_for_local_dev(file_path))
+            return stats.st_size
+        except FileNotFoundError:
+            logger.warning(f"File not found: {file_path}")
+            return 0
 
     def get_file_creation_datetime(self, file_path: str | Path) -> datetime:
         stats = None
@@ -61,25 +72,26 @@ class RemoveReadLogFiles:
             return datetime.fromtimestamp(stats.st_ctime) if stats else None
 
     def delete_indexed_log_files(self):
+        """Delete log files that have been fully read by fluentd"""
         files_list = self._parse_pos_file_lines(self.get_pos_log_file_list)
-        for log_file in files_list:
-            creation_time = self.get_file_creation_datetime(log_file['path'])
+        for file_info in files_list:
+            file_path = file_info['path']
+            file_size = self.get_size_of_file(file_path)
+            if file_size == file_info['size']:
+                try:
+                    os.remove(self._format_path_for_local_dev(file_path))
+                    logger.info(f"Deleted file: {file_path}")
+                except FileNotFoundError:
+                    logger.warning(f"File already deleted: {file_path}")
+                except Exception as e:
+                    logger.error(f"Error deleting file {file_path}: {e}")
 
-            if creation_time and (creation_time < datetime.now() - timedelta(minutes=MINUTES_TO_WAIT_BEFORE_DELETE)):
-
-                if log_file['size'] < self.get_size_of_file(log_file['path']):
-
-                    with contextlib.suppress(FileNotFoundError):
-                        os.remove(self._format_path_for_local_dev(log_file['path']))
-                        logger.info(f"File: {log_file['path']} hase been removed")
-                else:
-                    logger.info(f"File: {log_file['path']} has not been completely read")
-            else:
-                logger.info(f"File: {log_file['path']} is not old enough or have been deleted")
 
 def main():
-    a = RemoveReadLogFiles(POS_FILE_PATH)
-    a.delete_indexed_log_files()
+    for pos_file in POS_FILES:
+        logger.info(f"Processing pos file: {pos_file}")
+        cleaner = RemoveReadLogFiles(pos_file)
+        cleaner.delete_indexed_log_files()
 
 
 if __name__ == '__main__':

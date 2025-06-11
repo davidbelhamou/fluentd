@@ -16,4 +16,8 @@ curl -X PUT "http://elasticsearch:9200/_index_template/logs-fallback-template" \
      -H "Content-Type: application/json" \
      -d @/elasticsearch-fallback-template.json
 
+curl -X PUT "http://elasticsearch:9200/_index_template/service1-logs-template" \
+     -H "Content-Type: application/json" \
+     -d @/service1-template.json
+
 echo "Index template applied successfully" 

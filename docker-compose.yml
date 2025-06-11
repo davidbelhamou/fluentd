@@ -68,6 +68,7 @@ services:
     volumes:
       - ./elasticsearch-template.json:/elasticsearch-template.json
       - ./elasticsearch-fallback-template.json:/elasticsearch-fallback-template.json
+      - ./service1-template.json:/service1-template.json
       - ./setup-data-stream.sh:/setup-data-stream.sh
     command: ["sh", "/setup-data-stream.sh"]
     depends_on:

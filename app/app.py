@@ -31,23 +31,52 @@ def generate_log():
     }
     return json.dumps(log_data)
 
+def generate_bad_log():
+    log_data = {
+        "@timestamp": datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "user_id": random.choice(["david", "ben", "fisher"]),
+        "action": random.choice(["login", "logout", "view", "edit", "delete"]),
+        "status": random.choice(["success", "error", "warning"]),
+        "response_time": round(random.uniform(0.1, 2.0), 3)
+    }
+    return json.dumps(log_data)
+
+def generate_service1_log():
+    log_data = {
+        "@timestamp": datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "user_id": random.randint(1, 1000),
+        "action": random.choice(["login", "logout", "view", "edit", "delete"]),
+        "status": random.choice(["success", "error", "warning"]),
+        "response_time": round(random.uniform(0.1, 2.0), 3),
+        "hard_coded_source_file": "service1"
+    }   
+    return json.dumps(log_data)
+
 def write_logs_bulk():
     """Write logs in bulk to a new file"""
     today = datetime.now().strftime("%Y-%m-%d")
     file_number = get_next_file_number()
     filename = f"/var/log/app/my-logs-{today}-{file_number}.log"
+    filename_service1 = f"/var/log/app/service1-logs-{today}-{file_number}.log"
     
     # Generate and write logs in bulk
     logs = []
+    logs_service1 = []
     for _ in range(100):  # Generate 100 logs at once
-        logs.append(generate_log())
+        logs.append(generate_log() if random.random() < 1.0 else generate_bad_log())
+        logs_service1.append(generate_service1_log())
+
 
     print(f"logs: {logs}")
+    print(f"logs_service1: {logs_service1}")
     
     with open(filename, 'w') as f:
         f.write('\n'.join(logs))
-    
+    with open(filename_service1, 'w') as f:
+        f.write('\n'.join(logs_service1))
+
     print(f"Written {len(logs)} logs to {filename}")
+    print(f"Written {len(logs_service1)} logs to {filename_service1}")
 
 def main():
     """Main function to generate logs every 5 seconds"""
