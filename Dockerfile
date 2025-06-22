@@ -8,10 +8,11 @@ RUN mkdir -p /var/log/fluentd/pos /var/log/fluentd/buffer && \
     chmod -R 777 /var/log/fluentd/buffer && \
     chmod -R 777 /var/log/fluentd/pos
 
-# Install Elasticsearch plugin
-RUN gem install elasticsearch --no-document && \
+# Install Elasticsearch plugin with specific versions compatible with ES 8.x
+RUN gem uninstall fluent-plugin-elasticsearch --all --ignore-dependencies || true && \
+    gem install elasticsearch:8.4.0 --no-document && \
     gem install elastic-transport:8.4.0 --no-document && \
-    gem install fluent-plugin-elasticsearch --no-document && \
+    gem install fluent-plugin-elasticsearch:5.3.0 --no-document && \
     gem install faraday-excon --no-document
 
 # Install Prometheus plugin
